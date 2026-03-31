@@ -46,7 +46,7 @@ function getMonthShort(month: string): string {
 export default function ReportsScreen() {
   const theme = useTheme();
   const currency = useCurrency();
-  const { hp, sp, isTablet, contentWidth, width } = useResponsive();
+  const { hp, sp, isTablet, contentWidth, width, landscapeHp, safeEdges } = useResponsive();
   const [selectedMonth, setSelectedMonth] = useState(toMonthKey());
   const monthOptions = getMonthOptions();
 
@@ -64,12 +64,15 @@ export default function ReportsScreen() {
   const totalIncome = incomeByCategory.reduce((s, c) => s + c.total, 0);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={safeEdges}>
       {/* Header */}
       <View style={{
-        paddingHorizontal: hp, paddingTop: sp, paddingBottom: sp * 0.5,
         borderBottomWidth: 1, borderBottomColor: theme.colors.border,
-        maxWidth: contentWidth, alignSelf: width >= 768 ? 'center' : 'stretch', width: '100%',
+        paddingHorizontal: hp + landscapeHp,
+      }}>
+      <View style={{
+        paddingTop: sp, paddingBottom: sp * 0.5,
+        maxWidth: contentWidth, alignSelf: 'center', width: '100%',
       }}>
         <View style={{ marginBottom: theme.spacing.md }}>
           <Text style={[theme.typography.headingLg, { color: theme.colors.textPrimary }]}>Reports</Text>
@@ -104,6 +107,7 @@ export default function ReportsScreen() {
           })}
         </ScrollView>
       </View>
+      </View>
 
       <SafeScrollView
         onRefresh={refresh}
@@ -111,9 +115,9 @@ export default function ReportsScreen() {
         contentStyle={{ paddingTop: sp }}
       >
         <View style={{
-          paddingHorizontal: hp,
+          paddingHorizontal: hp + landscapeHp,
           maxWidth: contentWidth,
-          alignSelf: width >= 768 ? 'center' : 'stretch',
+          alignSelf: 'center',
           width: '100%',
         }}>
 

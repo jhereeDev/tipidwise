@@ -7,6 +7,7 @@ import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import ResponsiveContainer from '../../../components/layout/ResponsiveContainer';
 import { useTheme } from '../../../context/ThemeContext';
+import { useResponsive } from '../../../hooks/useResponsive';
 import { formatCurrency, formatDate, formatBillingCycle } from '../../../lib/formatting';
 import { useCurrency } from '../../../context/CurrencyContext';
 import { getIncomeById, deleteIncome } from '../../../lib/db/income';
@@ -17,6 +18,7 @@ export default function IncomeDetailScreen() {
   const router = useRouter();
   const currency = useCurrency();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { hp, landscapeHp, contentWidth, isLandscape } = useResponsive();
   const income = getIncomeById(parseInt(id, 10));
 
   if (!income) {
@@ -38,8 +40,9 @@ export default function IncomeDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top', 'bottom']}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.md, borderBottomWidth: 1, borderBottomColor: theme.colors.border }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={isLandscape ? ['top', 'bottom', 'left', 'right'] : ['top', 'bottom']}>
+      <View style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.border, paddingHorizontal: hp + landscapeHp }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', maxWidth: contentWidth, width: '100%', alignSelf: 'center', paddingVertical: theme.spacing.md }}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={[theme.typography.bodyLg, { color: theme.colors.primary[500] }]}>← Back</Text>
         </TouchableOpacity>
@@ -47,6 +50,7 @@ export default function IncomeDetailScreen() {
         <TouchableOpacity onPress={() => router.push({ pathname: '/(modals)/add-income', params: { id } } as any)}>
           <Text style={[theme.typography.bodyLg, { color: theme.colors.primary[500] }]}>Edit</Text>
         </TouchableOpacity>
+      </View>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: theme.spacing.md }} showsVerticalScrollIndicator={false}>

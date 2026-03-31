@@ -24,7 +24,7 @@ const INITIAL_STATE: SubscriptionFormState = {
 export default function AddSubscriptionModal() {
   const theme = useTheme();
   const router = useRouter();
-  const { hp, contentWidth, width } = useResponsive();
+  const { hp, contentWidth, landscapeHp, isLandscape, width } = useResponsive();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEditing = !!id;
   const { addSubscription, updateSubscription } = useSubscriptions();
@@ -65,12 +65,16 @@ export default function AddSubscriptionModal() {
   const reminderOptions = REMINDER_DAYS_OPTIONS.map((r) => ({ value: r.value, label: r.label }));
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={isLandscape ? ['top', 'bottom', 'left', 'right'] : ['top', 'bottom']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <View style={{
-          flexDirection: 'row', alignItems: 'center',
-          paddingHorizontal: hp, paddingVertical: theme.spacing.md,
           borderBottomWidth: 1, borderBottomColor: theme.colors.border,
+          paddingHorizontal: hp + landscapeHp,
+        }}>
+        <View style={{
+          flexDirection: 'row', alignItems: 'center',
+          maxWidth: contentWidth, width: '100%', alignSelf: 'center',
+          paddingVertical: theme.spacing.md,
         }}>
           <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60 }}>
             <Text style={[theme.typography.bodyLg, { color: theme.colors.primary[500] }]}>Cancel</Text>
@@ -80,9 +84,10 @@ export default function AddSubscriptionModal() {
           </Text>
           <View style={{ minWidth: 60 }} />
         </View>
+        </View>
 
         <ScrollView contentContainerStyle={{ paddingVertical: theme.spacing.lg }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <View style={{ maxWidth: contentWidth, alignSelf: width >= 768 ? 'center' : 'stretch', width: '100%', paddingHorizontal: hp, gap: theme.spacing.md }}>
+          <View style={{ maxWidth: contentWidth, alignSelf: 'center', width: '100%', paddingHorizontal: hp + landscapeHp, gap: theme.spacing.md }}>
             <Input label="Service Name" placeholder="e.g. Netflix, Spotify" value={form.name} onChangeText={(v) => update('name', v)} error={errors.name} leftIcon="🔄" />
             <Input label="Amount" placeholder="0.00" value={form.amount} onChangeText={(v) => update('amount', v)} error={errors.amount} keyboardType="decimal-pad" leftIcon="₱" />
 

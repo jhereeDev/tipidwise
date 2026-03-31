@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, ViewStyle, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
+import { useResponsive } from '../../hooks/useResponsive';
 
 interface SafeScrollViewProps {
   children: React.ReactNode;
@@ -21,11 +22,17 @@ export default function SafeScrollView({
   edges = ['bottom'],
 }: SafeScrollViewProps) {
   const theme = useTheme();
+  const { isLandscape } = useResponsive();
+
+  // Auto-add left/right edges in landscape for notch/corner clearance
+  const resolvedEdges = isLandscape
+    ? ([...new Set([...edges, 'left', 'right'])] as ('top' | 'bottom' | 'left' | 'right')[])
+    : edges;
 
   return (
     <SafeAreaView
       style={[{ flex: 1, backgroundColor: theme.colors.background }, style]}
-      edges={edges}
+      edges={resolvedEdges}
     >
       <ScrollView
         style={{ flex: 1 }}

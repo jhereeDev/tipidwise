@@ -8,6 +8,8 @@ import ResponsiveContainer from '../../components/layout/ResponsiveContainer';
 import { useTheme } from '../../context/ThemeContext';
 import { useThemeContext } from '../../context/ThemeContext';
 import { useCurrencyContext } from '../../context/CurrencyContext';
+import { useAuth } from '../../context/AuthContext';
+import { useResponsive } from '../../hooks/useResponsive';
 import { CURRENCIES } from '../../constants/config';
 import Constants from 'expo-constants';
 import { getDatabase } from '../../lib/db/client';
@@ -17,6 +19,15 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { themeMode, setThemeMode } = useThemeContext();
   const { currency, setCurrency } = useCurrencyContext();
+  const { user, isGuest, signOut: doSignOut } = useAuth();
+  const { hp, landscapeHp, contentWidth, isLandscape } = useResponsive();
+
+  const handleSignOut = () => {
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: async () => { await doSignOut(); router.dismissAll(); router.replace('/' as any); } },
+    ]);
+  };
 
   const themeOptions = [
     { value: 'system', label: 'System default' },
@@ -49,17 +60,101 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top', 'bottom']}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.md, borderBottomWidth: 1, borderBottomColor: theme.colors.border }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={isLandscape ? ['top', 'bottom', 'left', 'right'] : ['top', 'bottom']}>
+      <View style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.border, paddingHorizontal: hp + landscapeHp }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', maxWidth: contentWidth, width: '100%', alignSelf: 'center', paddingVertical: theme.spacing.md }}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={[theme.typography.bodyLg, { color: theme.colors.primary[500] }]}>Done</Text>
         </TouchableOpacity>
         <Text style={[theme.typography.headingMd, { color: theme.colors.textPrimary, flex: 1, textAlign: 'center' }]}>Settings</Text>
         <View style={{ width: 40 }} />
       </View>
+      </View>
 
       <ScrollView contentContainerStyle={{ padding: theme.spacing.md }} showsVerticalScrollIndicator={false}>
         <ResponsiveContainer>
+          {/* Account Section */}
+          <Text style={[theme.typography.labelSm, { color: theme.colors.textSecondary, marginBottom: theme.spacing.sm, textTransform: 'uppercase', letterSpacing: 0.5 }]}>
+            Account
+          </Text>
+          <Card style={{ marginBottom: theme.spacing.md }}>
+            {user ? (
+              <View style={{ gap: theme.spacing.md }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md }}>
+                  <View style={{
+                    width: 48, height: 48, borderRadius: theme.radii.full,
+                    backgroundColor: `${theme.colors.primary[500]}20`,
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Text style={{ fontSize: 22 }}>👤</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[theme.typography.labelLg, { color: theme.colors.textPrimary }]}>
+                      {user.user_metadata?.display_name ?? 'User'}
+                    </Text>
+                    <Text style={[theme.typography.bodySm, { color: theme.colors.textSecondary }]}>
+                      {user.email}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={handleSignOut}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={{ fontSize: 18 }}>🚪</Text>
+                  <Text style={[theme.typography.labelLg, { color: theme.colors.danger[500] }]}>Sign Out</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={{ gap: theme.spacing.md }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md }}>
+                  <View style={{
+                    width: 48, height: 48, borderRadius: theme.radii.full,
+                    backgroundColor: theme.colors.surface,
+                    borderWidth: 1, borderColor: theme.colors.border,
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Text style={{ fontSize: 22 }}>👤</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[theme.typography.labelLg, { color: theme.colors.textPrimary }]}>
+                      {isGuest ? 'Guest Mode' : 'Not signed in'}
+                    </Text>
+                    <Text style={[theme.typography.bodySm, { color: theme.colors.textSecondary }]}>
+                      Data saved locally on this device
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+                  <TouchableOpacity
+                    onPress={() => { router.back(); setTimeout(() => router.push('/sign-in' as any), 300); }}
+                    style={{
+                      flex: 1, height: 44, borderRadius: theme.radii.lg,
+                      backgroundColor: theme.colors.primary[500],
+                      alignItems: 'center', justifyContent: 'center',
+                    }}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[theme.typography.labelLg, { color: '#fff' }]}>Sign In</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => { router.back(); setTimeout(() => router.push('/sign-up' as any), 300); }}
+                    style={{
+                      flex: 1, height: 44, borderRadius: theme.radii.lg,
+                      backgroundColor: theme.colors.surface,
+                      borderWidth: 1, borderColor: theme.colors.border,
+                      alignItems: 'center', justifyContent: 'center',
+                    }}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[theme.typography.labelLg, { color: theme.colors.textPrimary }]}>Sign Up</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </Card>
+
           <Text style={[theme.typography.labelSm, { color: theme.colors.textSecondary, marginBottom: theme.spacing.sm, textTransform: 'uppercase', letterSpacing: 0.5 }]}>
             Appearance
           </Text>
@@ -116,7 +211,9 @@ export default function SettingsScreen() {
               </View>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={[theme.typography.bodyMd, { color: theme.colors.textSecondary }]}>Storage</Text>
-                <Text style={[theme.typography.bodyMd, { color: theme.colors.textPrimary }]}>Local (on-device)</Text>
+                <Text style={[theme.typography.bodyMd, { color: theme.colors.textPrimary }]}>
+                  {user ? 'Local + Cloud Sync' : 'Local (on-device)'}
+                </Text>
               </View>
             </View>
           </Card>

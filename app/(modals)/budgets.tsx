@@ -30,7 +30,7 @@ export default function BudgetsScreen() {
   const theme = useTheme();
   const router = useRouter();
   const currency = useCurrency();
-  const { hp, sp, contentWidth, width } = useResponsive();
+  const { hp, sp, contentWidth, width, landscapeHp, safeEdges } = useResponsive();
   const { budgetsWithSpend, setBudget, removeBudget, refresh } = useBudgets(toMonthKey());
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -71,12 +71,16 @@ export default function BudgetsScreen() {
   const budgetMap = new Map(budgetsWithSpend.map((b) => [b.category, b]));
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={safeEdges}>
       {/* Header */}
       <View style={{
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: hp, paddingTop: sp, paddingBottom: sp * 0.75,
         borderBottomWidth: 1, borderBottomColor: theme.colors.border,
+        paddingHorizontal: hp + landscapeHp,
+      }}>
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        maxWidth: contentWidth, width: '100%', alignSelf: 'center',
+        paddingTop: sp, paddingBottom: sp * 0.75,
       }}>
         <View>
           <Text style={[theme.typography.headingLg, { color: theme.colors.textPrimary }]}>Budgets</Text>
@@ -97,16 +101,17 @@ export default function BudgetsScreen() {
           <Text style={{ fontSize: 18 }}>✕</Text>
         </TouchableOpacity>
       </View>
+      </View>
 
       <FlatList
         data={EXPENSE_CATEGORIES}
         keyExtractor={(item) => item}
         contentContainerStyle={{
-          paddingHorizontal: hp,
+          paddingHorizontal: hp + landscapeHp,
           paddingTop: sp,
           paddingBottom: theme.spacing.xxl,
           maxWidth: contentWidth,
-          alignSelf: width >= 768 ? 'center' : undefined,
+          alignSelf: 'center',
           width: '100%',
         }}
         renderItem={({ item: cat }) => {

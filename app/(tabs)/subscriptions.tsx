@@ -15,7 +15,7 @@ export default function SubscriptionsScreen() {
   const theme = useTheme();
   const router = useRouter();
   const currency = useCurrency();
-  const { hp, sp, columns, contentWidth, width } = useResponsive();
+  const { hp, sp, columns, contentWidth, width, landscapeHp, safeEdges } = useResponsive();
   const { subscriptions, isLoading, toggleActive, markPaid, refresh } = useSubscriptions();
   const monthlyTotal = getTotalMonthlySubscriptionCost();
   const activeCount = subscriptions.filter((s) => s.isActive).length;
@@ -23,12 +23,15 @@ export default function SubscriptionsScreen() {
   useFocusEffect(useCallback(() => { refresh(); }, []));
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={safeEdges}>
       {/* Header */}
       <View style={{
-        paddingHorizontal: hp, paddingTop: sp, paddingBottom: sp * 0.75,
         borderBottomWidth: 1, borderBottomColor: theme.colors.border,
-        maxWidth: contentWidth, alignSelf: width >= 768 ? 'center' : 'stretch', width: '100%',
+        paddingHorizontal: hp + landscapeHp,
+      }}>
+      <View style={{
+        paddingTop: sp, paddingBottom: sp * 0.75,
+        maxWidth: contentWidth, alignSelf: 'center', width: '100%',
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View>
@@ -51,9 +54,10 @@ export default function SubscriptionsScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      </View>
 
       {/* Content */}
-      <View style={{ flex: 1, maxWidth: contentWidth, alignSelf: width >= 768 ? 'center' : 'stretch', width: '100%' }}>
+      <View style={{ flex: 1, maxWidth: contentWidth, alignSelf: 'center', width: '100%', paddingHorizontal: landscapeHp }}>
         {subscriptions.length === 0 ? (
           <EmptyState
             icon="🔄"

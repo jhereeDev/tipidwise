@@ -64,6 +64,61 @@ const MIGRATIONS: Array<{ version: number; sql: string[] }> = [
       `ALTER TABLE subscriptions ADD COLUMN last_paid_date TEXT`,
     ],
   },
+  {
+    version: 4,
+    sql: [
+      // Sync support: add remote_id and sync_status to all data tables
+      `ALTER TABLE expenses ADD COLUMN remote_id TEXT`,
+      `ALTER TABLE expenses ADD COLUMN sync_status TEXT DEFAULT 'pending'`,
+      `ALTER TABLE expenses ADD COLUMN deleted_at TEXT`,
+      `ALTER TABLE income ADD COLUMN remote_id TEXT`,
+      `ALTER TABLE income ADD COLUMN sync_status TEXT DEFAULT 'pending'`,
+      `ALTER TABLE income ADD COLUMN deleted_at TEXT`,
+      `ALTER TABLE subscriptions ADD COLUMN remote_id TEXT`,
+      `ALTER TABLE subscriptions ADD COLUMN sync_status TEXT DEFAULT 'pending'`,
+      `ALTER TABLE subscriptions ADD COLUMN deleted_at TEXT`,
+      `ALTER TABLE budgets ADD COLUMN remote_id TEXT`,
+      `ALTER TABLE budgets ADD COLUMN sync_status TEXT DEFAULT 'pending'`,
+      `ALTER TABLE budgets ADD COLUMN deleted_at TEXT`,
+    ],
+  },
+  {
+    version: 5,
+    sql: [
+      // Savings goals
+      `CREATE TABLE IF NOT EXISTS savings_goals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        target_amount REAL NOT NULL CHECK(target_amount > 0),
+        current_amount REAL NOT NULL DEFAULT 0,
+        deadline TEXT,
+        category TEXT,
+        icon TEXT DEFAULT '🎯',
+        is_completed INTEGER NOT NULL DEFAULT 0,
+        remote_id TEXT,
+        sync_status TEXT DEFAULT 'pending',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )`,
+      // User streaks
+      `CREATE TABLE IF NOT EXISTS user_streaks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        streak_type TEXT NOT NULL UNIQUE,
+        current_count INTEGER NOT NULL DEFAULT 0,
+        longest_count INTEGER NOT NULL DEFAULT 0,
+        last_logged_date TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )`,
+      // Achievements
+      `CREATE TABLE IF NOT EXISTS achievements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        achievement_type TEXT NOT NULL UNIQUE,
+        unlocked_at TEXT NOT NULL,
+        metadata TEXT
+      )`,
+    ],
+  },
 ];
 
 export function runMigrations(): void {

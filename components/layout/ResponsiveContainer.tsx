@@ -9,16 +9,16 @@ interface ResponsiveContainerProps {
 }
 
 export default function ResponsiveContainer({ children, style, noPadding }: ResponsiveContainerProps) {
-  const { contentWidth, width, hp } = useResponsive();
-  const isTablet = width >= 768;
+  const { contentWidth, hp, landscapeHp } = useResponsive();
 
   return (
     <View
       style={[
         {
-          width: contentWidth,
-          alignSelf: isTablet ? 'center' : 'stretch',
-          paddingHorizontal: noPadding ? 0 : hp,
+          maxWidth: contentWidth,
+          width: '100%',
+          alignSelf: 'center',
+          paddingHorizontal: noPadding ? 0 : hp + landscapeHp,
           flex: 1,
         },
         style,

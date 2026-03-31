@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as IncomeDB from '../lib/db/income';
+import * as SupabaseIncome from '../lib/supabase/income';
+import { useDataMode } from '../context/DataContext';
 import type { Income, IncomeCategory } from '../types/models';
 import type { IncomeFormState } from '../types/forms';
 
@@ -19,41 +21,90 @@ interface UseIncomeResult {
   refresh: () => void;
 }
 
+function mapSupabaseIncome(row: any): Income {
+  return {
+    id: row.id,
+    title: row.title,
+    amount: Number(row.amount),
+    category: row.category,
+    date: row.date,
+    isRecurring: row.is_recurring ?? false,
+    recurrenceInterval: row.recurrence_interval,
+    notes: row.notes,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 export function useIncome(options?: UseIncomeOptions): UseIncomeResult {
+  const { mode, userId } = useDataMode();
   const [income, setIncome] = useState<Income[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = IncomeDB.getIncome(options);
-      setIncome(data);
+      if (mode === 'cloud' && userId) {
+        const data = await SupabaseIncome.getSupabaseIncome(userId, options?.month);
+        setIncome(data.map(mapSupabaseIncome));
+      } else {
+        const data = IncomeDB.getIncome(options);
+        setIncome(data);
+      }
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load income');
     } finally {
       setIsLoading(false);
     }
-  }, [options?.month, options?.category, options?.limit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode, userId, options?.month, options?.category, options?.limit]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   const addIncome = async (form: IncomeFormState) => {
-    IncomeDB.insertIncome(form);
-    load();
+    if (mode === 'cloud' && userId) {
+      await SupabaseIncome.addSupabaseIncome(userId, {
+        title: form.title,
+        amount: parseFloat(form.amount),
+        category: form.category,
+        date: form.date,
+        isRecurring: form.isRecurring,
+        recurrenceInterval: form.recurrenceInterval || undefined,
+        notes: form.notes || undefined,
+      });
+    } else {
+      IncomeDB.insertIncome(form);
+    }
+    await load();
   };
 
   const updateIncome = async (id: number, form: IncomeFormState) => {
-    IncomeDB.updateIncome(id, form);
-    load();
+    if (mode === 'cloud') {
+      await SupabaseIncome.updateSupabaseIncome(String(id), {
+        title: form.title,
+        amount: parseFloat(form.amount),
+        category: form.category,
+        date: form.date,
+        isRecurring: form.isRecurring,
+        recurrenceInterval: form.recurrenceInterval || undefined,
+        notes: form.notes || undefined,
+      });
+    } else {
+      IncomeDB.updateIncome(id, form);
+    }
+    await load();
   };
 
   const deleteIncome = async (id: number) => {
-    IncomeDB.deleteIncome(id);
-    load();
+    if (mode === 'cloud') {
+      await SupabaseIncome.deleteSupabaseIncome(String(id));
+    } else {
+      IncomeDB.deleteIncome(id);
+    }
+    await load();
   };
 
   return { income, isLoading, error, addIncome, updateIncome, deleteIncome, refresh: load };

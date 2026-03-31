@@ -26,7 +26,7 @@ const INITIAL_STATE: ExpenseFormState = {
 export default function AddExpenseModal() {
   const theme = useTheme();
   const router = useRouter();
-  const { hp, contentWidth, width } = useResponsive();
+  const { hp, contentWidth, landscapeHp, isLandscape } = useResponsive();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEditing = !!id;
   const { addExpense, updateExpense } = useExpenses();
@@ -67,13 +67,17 @@ export default function AddExpenseModal() {
   const categoryOptions = EXPENSE_CATEGORIES.map((c) => ({ value: c.value, label: c.label, icon: c.icon }));
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={isLandscape ? ['top', 'bottom', 'left', 'right'] : ['top', 'bottom']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         {/* Header */}
         <View style={{
-          flexDirection: 'row', alignItems: 'center',
-          paddingHorizontal: hp, paddingVertical: theme.spacing.md,
           borderBottomWidth: 1, borderBottomColor: theme.colors.border,
+          paddingHorizontal: hp + landscapeHp,
+        }}>
+        <View style={{
+          flexDirection: 'row', alignItems: 'center',
+          maxWidth: contentWidth, width: '100%', alignSelf: 'center',
+          paddingVertical: theme.spacing.md,
         }}>
           <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60 }}>
             <Text style={[theme.typography.bodyLg, { color: theme.colors.primary[500] }]}>Cancel</Text>
@@ -83,13 +87,14 @@ export default function AddExpenseModal() {
           </Text>
           <View style={{ minWidth: 60 }} />
         </View>
+        </View>
 
         <ScrollView
           contentContainerStyle={{ paddingVertical: theme.spacing.lg }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ maxWidth: contentWidth, alignSelf: width >= 768 ? 'center' : 'stretch', width: '100%', paddingHorizontal: hp, gap: theme.spacing.md }}>
+          <View style={{ maxWidth: contentWidth, alignSelf: 'center', width: '100%', paddingHorizontal: hp + landscapeHp, gap: theme.spacing.md }}>
             <Input label="Title" placeholder="e.g. Lunch at Jollibee" value={form.title} onChangeText={(v) => update('title', v)} error={errors.title} leftIcon="🧾" />
             <Input label="Amount" placeholder="0.00" value={form.amount} onChangeText={(v) => update('amount', v)} error={errors.amount} keyboardType="decimal-pad" leftIcon="₱" />
             <Select label="Category" placeholder="Select category" options={categoryOptions} value={form.category} onChange={(v) => update('category', v)} error={errors.category} />

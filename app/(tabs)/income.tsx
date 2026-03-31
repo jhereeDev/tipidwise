@@ -26,7 +26,7 @@ export default function IncomeScreen() {
   const theme = useTheme();
   const router = useRouter();
   const currency = useCurrency();
-  const { hp, sp, contentWidth, width } = useResponsive();
+  const { hp, sp, contentWidth, width, landscapeHp, safeEdges } = useResponsive();
   const [selectedMonth, setSelectedMonth] = useState(toMonthKey());
   const [searchQuery, setSearchQuery] = useState('');
   const { income, isLoading, refresh } = useIncome({ month: selectedMonth });
@@ -44,12 +44,15 @@ export default function IncomeScreen() {
   }, [income, searchQuery]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={safeEdges}>
       {/* Header */}
       <View style={{
-        paddingHorizontal: hp, paddingTop: sp, paddingBottom: sp * 0.5,
         borderBottomWidth: 1, borderBottomColor: theme.colors.border,
-        maxWidth: contentWidth, alignSelf: width >= 768 ? 'center' : 'stretch', width: '100%',
+        paddingHorizontal: hp + landscapeHp,
+      }}>
+      <View style={{
+        paddingTop: sp, paddingBottom: sp * 0.5,
+        maxWidth: contentWidth, alignSelf: 'center', width: '100%',
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: theme.spacing.md }}>
           <View>
@@ -136,9 +139,10 @@ export default function IncomeScreen() {
           )}
         </View>
       </View>
+      </View>
 
       {/* Content */}
-      <View style={{ flex: 1, maxWidth: contentWidth, alignSelf: width >= 768 ? 'center' : 'stretch', width: '100%' }}>
+      <View style={{ flex: 1, maxWidth: contentWidth, alignSelf: 'center', width: '100%', paddingHorizontal: landscapeHp }}>
         {filtered.length === 0 ? (
           <EmptyState
             icon="💰"

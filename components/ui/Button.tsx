@@ -42,6 +42,7 @@ export default function Button({
   const textStyle: TextStyle = {
     ...theme.typography.labelLg,
     ...variantTextStyles(theme, variant),
+    textAlign: 'center',
   };
 
   return (

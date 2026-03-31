@@ -18,6 +18,9 @@ export default function ModalsLayout() {
       <Stack.Screen name="expense-detail/[id]" />
       <Stack.Screen name="income-detail/[id]" />
       <Stack.Screen name="subscription-detail/[id]" />
+      <Stack.Screen name="budgets" />
+      <Stack.Screen name="savings-goals" />
+      <Stack.Screen name="group-detail/[id]" />
       <Stack.Screen name="settings" />
     </Stack>
   );

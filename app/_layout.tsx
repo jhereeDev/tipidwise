@@ -12,6 +12,9 @@ import {
 } from '@expo-google-fonts/inter';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { CurrencyProvider } from '../context/CurrencyContext';
+import { AuthProvider } from '../context/AuthContext';
+import { DataProvider } from '../context/DataContext';
+import { ToastProvider } from '../context/ToastContext';
 import { useDatabase } from '../hooks/useDatabase';
 import { requestNotificationPermissions } from '../lib/notifications/permissions';
 import { setupNotificationHandler } from '../lib/notifications/scheduler';
@@ -44,6 +47,9 @@ function AppContent() {
     <>
       <StatusBar style={theme.isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="sign-up" options={{ presentation: 'modal' }} />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(modals)" options={{ presentation: 'modal' }} />
       </Stack>
@@ -72,7 +78,13 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <CurrencyProvider>
-            <AppContent />
+            <AuthProvider>
+              <DataProvider>
+                <ToastProvider>
+                  <AppContent />
+                </ToastProvider>
+              </DataProvider>
+            </AuthProvider>
           </CurrencyProvider>
         </ThemeProvider>
       </SafeAreaProvider>
